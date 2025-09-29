@@ -8,8 +8,8 @@ import 'package:housekeep/features/main/seeker/dashboard/screens/seeker_dashboar
 import 'package:housekeep/features/main/seeker/dashboard/screens/post_job.dart';
 
 // 💡 Rename to SeekerMainShell (more accurate)
-class SeekerNavbar extends StatelessWidget {
-  const SeekerNavbar({super.key});
+class SeekerNavBar extends StatelessWidget {
+  const SeekerNavBar({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +18,7 @@ class SeekerNavbar extends StatelessWidget {
 
     final List<Widget> _screens = [
       const SeekerDashboard(),     // Index 0
-      const PostJobScreen(),       // Index 1 (you imported SeekerBooking, so use it!)
+      PostJobScreen(),       // Index 1 (you imported SeekerBooking, so use it!)
       const AvailableKeepersScreen(),   
       const MyJobsScreen(),      // Index 2
     ];

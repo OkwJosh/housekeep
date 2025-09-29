@@ -1,29 +1,30 @@
-// lib/models/job.dart
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Job {
   final String id;
   final String seekerId;
   final String title;
   final String description;
-  final String serviceType;
   final String location;
   final DateTime date;
   final String time;
-  final String duration; // e.g., "3 hours"
+  final String duration;
   final String price;
-  final JobStatus status;
+  final String status; // 'open', 'confirmed', etc.
+  final List<String> applicants;
 
   Job({
     required this.id,
     required this.seekerId,
     required this.title,
     required this.description,
-    required this.serviceType,
     required this.location,
     required this.date,
     required this.time,
     required this.duration,
     required this.price,
-    this.status = JobStatus.pending,
+    required this.status,
+    this.applicants = const [],
   });
 
   factory Job.fromJson(Map<String, dynamic> json) => Job(
@@ -31,13 +32,13 @@ class Job {
         seekerId: json['seekerId'] ?? '',
         title: json['title'] ?? '',
         description: json['description'] ?? '',
-        serviceType: json['serviceType'] ?? '',
         location: json['location'] ?? '',
-        date: DateTime.parse(json['date'] ?? '2025-01-01'),
+        date: (json['date'] as Timestamp).toDate(),
         time: json['time'] ?? '09:00 AM',
         duration: json['duration'] ?? '1 hour',
         price: json['price'] ?? '\$0',
-        status: _getStatusFromString(json['status']),
+        status: json['status'] ?? 'open',
+        applicants: List<String>.from(json['applicants'] ?? []),
       );
 
   Map<String, dynamic> toJson() => {
@@ -45,29 +46,12 @@ class Job {
         'seekerId': seekerId,
         'title': title,
         'description': description,
-        'serviceType': serviceType,
         'location': location,
-        'date': date.toIso8601String(),
+        'date': date,
         'time': time,
         'duration': duration,
         'price': price,
-        'status': status.name,
+        'status': status,
+        'applicants': applicants,
       };
-
-  static JobStatus _getStatusFromString(String? status) {
-    switch (status?.toLowerCase()) {
-      case 'pending':
-        return JobStatus.pending;
-      case 'confirmed':
-        return JobStatus.confirmed;
-      case 'completed':
-        return JobStatus.completed;
-      case 'cancelled':
-        return JobStatus.cancelled;
-      default:
-        return JobStatus.pending;
-    }
-  }
 }
-
-enum JobStatus { pending, confirmed, completed, cancelled }

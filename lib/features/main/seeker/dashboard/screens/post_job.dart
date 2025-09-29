@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:housekeep/utilities/colors.dart'; // Make sure this exists
+import 'package:housekeep/features/main/seeker/dashboard/controllers/job_controller.dart';
+import 'package:housekeep/utilities/colors.dart';
 
 class PostJobScreen extends StatelessWidget {
-  const PostJobScreen({super.key});
+  PostJobScreen({super.key});
+
+  final controller = Get.put(PostJobController());
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +25,10 @@ class PostJobScreen extends StatelessWidget {
             color: Colors.black,
           ),
         ),
-
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Get.back(),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -29,13 +36,14 @@ class PostJobScreen extends StatelessWidget {
           children: [
             // Job Title
             TextField(
+              controller: controller.titleController,
               decoration: InputDecoration(
                 labelText: 'Job Title',
                 labelStyle: GoogleFonts.spaceGrotesk(
                   color: Colors.grey[600],
                   fontSize: 14,
                 ),
-                hintText: 'e.g. House Cleaning, Gardening',
+                hintText: 'e.g. Deep House Cleaning',
                 hintStyle: GoogleFonts.spaceGrotesk(
                   color: Colors.grey[500],
                   fontSize: 14,
@@ -56,71 +64,146 @@ class PostJobScreen extends StatelessWidget {
             const SizedBox(height: 16),
 
             // Category Dropdown
-            TextField(
-              enabled: false, // Make it look like a dropdown
-              decoration: InputDecoration(
-                labelText: 'Service Category',
-                labelStyle: GoogleFonts.spaceGrotesk(
-                  color: Colors.grey[600],
-                  fontSize: 14,
+            Obx(
+              () => DropdownButtonFormField<String>(
+                value: controller.selectedCategory.value,
+                decoration: InputDecoration(
+                  labelText: 'Service Category',
+                  labelStyle: GoogleFonts.spaceGrotesk(
+                    color: Colors.grey[600],
+                    fontSize: 14,
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: AppColors.border),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Theme.of(context).primaryColor!),
+                  ),
                 ),
-                hintText: 'Select a service',
-                hintStyle: GoogleFonts.spaceGrotesk(
-                  color: Colors.grey[500],
-                  fontSize: 14,
-                ),
-                filled: true,
-                fillColor: Colors.white,
-                suffixIcon: const Icon(Icons.arrow_drop_down, color: Colors.grey),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: AppColors.border),
-                ),
+                items: controller.categories.map((category) {
+                  return DropdownMenuItem(
+                    value: category,
+                    child: Text(
+                      category,
+                      style: GoogleFonts.spaceGrotesk(fontSize: 14),
+                    ),
+                  );
+                }).toList(),
+                onChanged: (value) => controller.selectedCategory.value = value!,
               ),
-              onTap: () {
-                // TODO: Show category picker
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Select a service category')),
-                );
-              },
             ),
 
             const SizedBox(height: 16),
 
-            // Date & Time
-            TextField(
-              readOnly: true,
-              decoration: InputDecoration(
-                labelText: 'Preferred Date & Time',
-                labelStyle: GoogleFonts.spaceGrotesk(
-                  color: Colors.grey[600],
-                  fontSize: 14,
+            // Date Picker
+            Obx(
+              () => TextField(
+                readOnly: true,
+                controller: TextEditingController(
+                  text: controller.selectedDate.value == null
+                      ? ''
+                      : '${controller.selectedDate.value!.day}/${controller.selectedDate.value!.month}/${controller.selectedDate.value!.year}',
                 ),
-                hintText: 'Tap to select date and time',
-                hintStyle: GoogleFonts.spaceGrotesk(
-                  color: Colors.grey[500],
-                  fontSize: 14,
+                decoration: InputDecoration(
+                  labelText: 'Preferred Date',
+                  labelStyle: GoogleFonts.spaceGrotesk(
+                    color: Colors.grey[600],
+                    fontSize: 14,
+                  ),
+                  hintText: 'Tap to select date',
+                  hintStyle: GoogleFonts.spaceGrotesk(
+                    color: Colors.grey[500],
+                    fontSize: 14,
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
+                  prefixIcon: const Icon(Icons.calendar_today, color: Colors.grey),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: AppColors.border),
+                  ),
                 ),
-                filled: true,
-                fillColor: Colors.white,
-                prefixIcon: const Icon(Icons.calendar_today, color: Colors.grey),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: AppColors.border),
-                ),
+                onTap: controller.pickDate,
               ),
-              onTap: () {
-                // TODO: Open date/time picker
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Open date picker')),
-                );
-              },
+            ),
+
+            const SizedBox(height: 16),
+
+            // Time Picker
+            Obx(
+              () => TextField(
+                readOnly: true,
+                controller: TextEditingController(
+                  text: controller.selectedTime.value == null
+                      ? ''
+                      : controller.selectedTime.value!.format(context),
+                ),
+                decoration: InputDecoration(
+                  labelText: 'Preferred Time',
+                  labelStyle: GoogleFonts.spaceGrotesk(
+                    color: Colors.grey[600],
+                    fontSize: 14,
+                  ),
+                  hintText: 'Tap to select time',
+                  hintStyle: GoogleFonts.spaceGrotesk(
+                    color: Colors.grey[500],
+                    fontSize: 14,
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
+                  prefixIcon: const Icon(Icons.access_time, color: Colors.grey),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: AppColors.border),
+                  ),
+                ),
+                onTap: controller.pickTime,
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Duration
+            Obx(
+              () => DropdownButtonFormField<String>(
+                value: controller.selectedDuration.value.isEmpty
+                    ? null
+                    : controller.selectedDuration.value,
+                decoration: InputDecoration(
+                  labelText: 'Estimated Duration',
+                  labelStyle: GoogleFonts.spaceGrotesk(
+                    color: Colors.grey[600],
+                    fontSize: 14,
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: AppColors.border),
+                  ),
+                ),
+                items: controller.durations.map((duration) {
+                  return DropdownMenuItem(
+                    value: duration,
+                    child: Text(
+                      duration,
+                      style: GoogleFonts.spaceGrotesk(fontSize: 14),
+                    ),
+                  );
+                }).toList(),
+                onChanged: (value) => controller.selectedDuration.value = value!,
+              ),
             ),
 
             const SizedBox(height: 16),
 
             // Job Description
             TextField(
+              controller: controller.descriptionController,
               maxLines: 5,
               decoration: InputDecoration(
                 labelText: 'Job Description',
@@ -146,30 +229,30 @@ class PostJobScreen extends StatelessWidget {
             const SizedBox(height: 24),
 
             // Post Job Button
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  // TODO: Handle job posting
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Job posted successfully!')),
-                  );
-                  Navigator.of(context).pop();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).primaryColor,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+            Obx(
+              () => SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: controller.isPosting.value
+                      ? null
+                      : controller.postJob,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).primaryColor,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
-                ),
-                child: Text(
-                  'Post Job',
-                  style: GoogleFonts.spaceGrotesk(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  child: controller.isPosting.value
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : Text(
+                          'Post Job',
+                          style: GoogleFonts.spaceGrotesk(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                 ),
               ),
             ),
